@@ -12,7 +12,7 @@ public:
 
 	ThemeUpdateDownloader(const std::string& url, Result& r) : BaseWorker({url}, true), OutResult(r) {
 		appendUrlToError = false;
-		SetLoadingLine("Checking for patch updates...");
+		SetLoadingLine("正在检查补丁更新...");
 	}
 
 protected:
@@ -32,20 +32,20 @@ protected:
 	Result& OutResult;
 };
 
-QlaunchPatchPage::QlaunchPatchPage() : IPage("Themes patches") { }
+QlaunchPatchPage::QlaunchPatchPage() : IPage("主题补丁") { }
 
 void QlaunchPatchPage::Render(int X, int Y)
 {
 	Utils::ImGuiSetupPage(this, X, Y);
 
 	ImGui::TextWrapped(
-		"Since firmware 9.0 some parts of the home menu require to be patched in order to install themes.\n"
-		"If you see this screen it means you don't have the patches needed for your firmware installed."
+		"从固件 9.0 开始，主菜单的某些部分需要修补才能安装主题。\n"
+		"如果您看到这条提示，则表示您没有安装固件所需的补丁。"
 	);	
 
 	if (PatchMng::QlaunchBuildId() != "")
 	{
-		ImGui::Text("Your home menu version is the following (BuildID) :");
+		ImGui::Text("您的主菜单版本如下 （BuildID）:");
 		ImGui::PushStyleColor(ImGuiCol_Text, Colors::Highlight);
 		Utils::ImGuiCenterString(PatchMng::QlaunchBuildId());
 		ImGui::PopStyleColor();
@@ -53,19 +53,19 @@ void QlaunchPatchPage::Render(int X, int Y)
 	else 
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, Colors::Red);
-		ImGui::Text("Error: couldn't detect your home menu version");
+		ImGui::Text("错误：无法检测到您的主菜单版本");
 		ImGui::PopStyleColor();
 	}
 
 	if (patchStatus == PatchMng::InstallResult::MissingIps) 
 	{		
-		ImGui::TextWrapped("This version is not currently supported, after a new firmware is released it can take a few days for the patches to be updated");
+		ImGui::TextWrapped("当前不支持此版本，发布新固件后，可能需要几天时间才能更新补丁");
 		ImGui::TextWrapped(
-			"New patches are now automatically downloaded from the internet whenever you launch this application. "
-			"If you want you can also check for updates now."
+			"现在，每当您启动此应用程序时，都会自动从互联网下载新的补丁。"
+			"如果需要，您还可以立即检查更新。"
 		);
 		
-		if (ImGui::Button("Check for updates"))
+		if (ImGui::Button("检查更新"))
 			PushFunction([this]() { CheckForUpdates(); });
 
 		if (updateMessageString != "")
@@ -81,7 +81,7 @@ void QlaunchPatchPage::Render(int X, int Y)
 		}
 
 		ImGui::TextWrapped(
-			"If you don't want to connect your console to the internet you can manually download the patches by following the the instructions at:"
+			"如果您不想将主机连接到互联网，请点击以下链接:"
 		);
 		
 		ImGui::PushStyleColor(ImGuiCol_Text, Colors::Highlight);
@@ -91,21 +91,21 @@ void QlaunchPatchPage::Render(int X, int Y)
 	else if (patchStatus == PatchMng::InstallResult::SDError)
 	{
 		ImGui::TextWrapped(
-			"There was an error reading or writing files from your SD card, this usually means your SD is corrupted.\n"
-			"Please run the archive bit fixer, if that still doesn't work format your SD and set it up from scratch."
+			"从 SD 卡读取或写入文件时出错，这通常意味着您的 SD 已损坏。\n"
+			"请运行存档位修复器，如果仍然不起作用，请格式化您的 SD 并从头开始设置。"
 		);
 	}
 	else if (patchStatus == PatchMng::InstallResult::UnsupportedCFW)
 	{
 		ImGui::TextWrapped(
-			"Your CFW doesn't seem to be supported.\n"
-			"If your CFW is supported and you're seeing this there's probably something wrong with your SD card, install your CFW again."
+			"你的自制固件似乎不受支持。\n"
+			"如果你的自制固件受支持，但你看到这个提示可能是你的 SD 卡有问题，请重新安装你的自制固件。"
 		);
 	}
 	else if (patchStatus == PatchMng::InstallResult::Ok)
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, Colors::Highlight);
-		ImGui::Text("Successfully updated, reboot your console !");
+		ImGui::Text("已成功更新，请重新启动您的主机！");
 		ImGui::PopStyleColor();
 	}
 
@@ -131,19 +131,19 @@ void QlaunchPatchPage::CheckForUpdates() {
 	else if (res.httpCode == 404)
 	{
 		updateMessageIsError = false;
-		updateMessageString = "No update found";
+		updateMessageString = "未找到更新";
 	}
 	else if (res.httpCode != 200)
 	{
 		updateMessageIsError = true;
-		updateMessageString = "HTTP error: code " + res.httpCode;
+		updateMessageString = "HTTP错误: 代码 " + res.httpCode;
 	}
 	else
 	{
 		updateMessageIsError = false;
 		fs::patches::WritePatchForBuild(PatchMng::QlaunchBuildId(), res.data);
 		patchStatus = PatchMng::EnsureInstalled();
-		updateMessageString = "Successfully updated, reboot your console !";
+		updateMessageString = "已成功更新，请重新启动您的主机！";
 	}
 }
 
